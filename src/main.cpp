@@ -4,44 +4,18 @@
 #include <iostream>
 #include <vector>
 #include "parser.hpp"
+#include "optimizer.hpp"
 
-void printProgram(Node prog) {
-    for (auto i : prog.childrenInstructions) {
-        switch (i.kind) {
-            case Operation::OUT:
-                std::cout << "OUT" << std::endl;
-                break;
-            case Operation::IN:
-                std::cout << "IN" << std::endl;
-                break;
-            case Operation::MOVE_R:
-                std::cout << "MOVE_R" << std::endl;
-                break;
-            case Operation::MOVE_L:
-                std::cout << "MOVE_L" << std::endl;
-                break;
-            case Operation::ADD:
-                std::cout << "ADD" << std::endl;
-                break;
-            case Operation::SUB:
-                std::cout << "SUB" << std::endl;
-                break;
-            case Operation::LOOP:
-                std::cout << "LOOP" << std::endl;
-                printProgram(i);
-                std::cout << "LOOP END" << std::endl;
-                break;
-            case Operation::NOOP:
-                std::cout << "NOOP" << std::endl;
-                break;
-            case Operation::PROC:
-                std::cout << "PROC" << std::endl;
-                break;
-        }
+void printProgram(std::vector <brainfuck::Instruction> ops) {
+    int counter = 0;
+    for (auto i: ops) {
+        std::cout << std::to_string(counter++) << " : ";
+        i.print();
     }
 }
 
-int main(int argc, char* argv[]) {
+
+int main(int argc, char *argv[]) {
     if (argc != 2) {
         std::cout << "Usage: " << argv[0] << " [brainfuck code]" << std::endl;
         return 1;
@@ -49,12 +23,14 @@ int main(int argc, char* argv[]) {
 
     std::string prog(argv[1]);
 
-    Parser parser{prog};
+    brainfuck::Parser parser{prog};
 
+    std::cout << "PARSED" << std::endl;
+
+    brainfuck::ByteCompiler byteCompiler{parser.getRoot()};
     // Parse the program into AST
 
-    printProgram(parser.getRoot());
+    printProgram(byteCompiler.ops);
 
     return 0;
 }
-
