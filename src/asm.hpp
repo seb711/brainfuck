@@ -12,17 +12,17 @@
 namespace brainfuck {
     enum ByteOperation {
         // ARITHMETIC OPS
-        OP_ADD,
-        OP_SUB,
-        OP_MUL,
+        BOP_ADD,
+        BOP_SUB,
+        BOP_MUL,
         // PC
-        OP_MOVE_RIGHT,
-        OP_MOVE_LEFT,
+        BOP_MOVE_RIGHT,
+        BOP_MOVE_LEFT,
         // CONTROL
-        OP_JUMP_NEQ_ZERO,
+        BOP_JUMP_NEQ_ZERO,
         // IO
-        OP_OUTPUT,
-        OP_INPUT
+        BOP_OUTPUT,
+        BOP_INPUT
     };
 
     struct ByteInstruction {
@@ -34,11 +34,11 @@ namespace brainfuck {
 
     class ByteCompiler {
     private:
-        const NodeInstruction root;
-        std::vector<ByteInstruction> compileAst(Node node, size_t offset);
+        const NodeInstruction& root;
+        std::vector<ByteInstruction> compileAst(const NodeInstruction& node, size_t offset);
 
     public:
-        ByteCompiler(NodeInstruction _root);
+        ByteCompiler(NodeInstruction& _root);
         ~ByteCompiler() = default;
 
         std::vector<ByteInstruction> ops;

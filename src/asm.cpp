@@ -8,28 +8,28 @@
 namespace brainfuck {
     void ByteInstruction::print() {
         switch (op) {
-            case ByteOperation::OP_OUTPUT:
+            case ByteOperation::BOP_OUTPUT:
                 std::cout << "OP_OUTPUT ";
                 break;
-            case ByteOperation::OP_INPUT:
+            case ByteOperation::BOP_INPUT:
                 std::cout << "OP_INPUT ";
                 break;
-            case ByteOperation::OP_SUB:
+            case ByteOperation::BOP_SUB:
                 std::cout << "OP_SUB ";
                 break;
-            case ByteOperation::OP_ADD:
+            case ByteOperation::BOP_ADD:
                 std::cout << "OP_ADD ";
                 break;
-            case ByteOperation::OP_MOVE_RIGHT:
+            case ByteOperation::BOP_MOVE_RIGHT:
                 std::cout << "OP_MOVE_RIGHT ";
                 break;
-            case ByteOperation::OP_MOVE_LEFT:
+            case ByteOperation::BOP_MOVE_LEFT:
                 std::cout << "OP_MOVE_LEFT ";
                 break;
-            case ByteOperation::OP_JUMP_NEQ_ZERO:
+            case ByteOperation::BOP_JUMP_NEQ_ZERO:
                 std::cout << "OP_JUMP_NEQ_ZERO ";
                 break;
-            case ByteOperation::OP_MUL:
+            case ByteOperation::BOP_MUL:
                 std::cout << "OP_MUL ";
                 break;
         }
@@ -37,34 +37,34 @@ namespace brainfuck {
         std::cout << std::to_string(argument) << std::endl;
     }
 
-    std::vector<ByteInstruction> ByteCompiler::compileAst(Node node, size_t offset = 0) {
+    std::vector<ByteInstruction> ByteCompiler::compileAst(const NodeInstruction& node, size_t offset = 0) {
         std::vector<ByteInstruction> instructions{};
 
-        for (auto i: node.childrenByteInstructions) {
+        for (auto i: node.childrenInstructions) {
             switch (i.kind) {
-                case ParserOperation::OUT:
-                    instructions.push_back(ByteInstruction{.op=ByteOperation::OP_OUTPUT, .argument=0});
+                case OptimizerOperation::OP_OUTPUT:
+                    instructions.push_back(ByteInstruction{.op=ByteOperation::BOP_OUTPUT, .argument=i.argument});
                     break;
-                case ParserOperation::IN:
-                    instructions.push_back(ByteInstruction{.op=ByteOperation::OP_INPUT, .argument=0});
+                case OptimizerOperation::OP_INPUT:
+                    instructions.push_back(ByteInstruction{.op=ByteOperation::BOP_INPUT, .argument=i.argument});
                     break;
-                case ParserOperation::MOVE_R:
-                    instructions.push_back(ByteInstruction{.op=ByteOperation::OP_MOVE_RIGHT, .argument=1});
+                case OptimizerOperation::OP_MOVE_RIGHT:
+                    instructions.push_back(ByteInstruction{.op=ByteOperation::BOP_MOVE_RIGHT, .argument=i.argument});
                     break;
-                case ParserOperation::MOVE_L:
-                    instructions.push_back(ByteInstruction{.op=ByteOperation::OP_MOVE_LEFT, .argument=1});
+                case OptimizerOperation::OP_MOVE_LEFT:
+                    instructions.push_back(ByteInstruction{.op=ByteOperation::BOP_MOVE_LEFT, .argument=i.argument});
                     break;
-                case ParserOperation::ADD:
-                    instructions.push_back(ByteInstruction{.op=ByteOperation::OP_ADD, .argument=1});
+                case OptimizerOperation::OP_ADD:
+                    instructions.push_back(ByteInstruction{.op=ByteOperation::BOP_ADD, .argument=i.argument});
                     break;
-                case ParserOperation::SUB:
-                    instructions.push_back(ByteInstruction{.op=ByteOperation::OP_SUB, .argument=1});
+                case OptimizerOperation::OP_SUB:
+                    instructions.push_back(ByteInstruction{.op=ByteOperation::BOP_SUB, .argument=i.argument});
                     break;
-                case ParserOperation::LOOP: {
-                    std::vector <ByteInstruction> loopByteInstructions = compileAst(i, offset + ByteInstructions.size());
+                case OptimizerOperation::OP_LOOP: {
+                    std::vector <ByteInstruction> loopByteInstructions = compileAst(i, offset + instructions.size());
                     loopByteInstructions.push_back(
-                            ByteInstruction{.op=ByteOperation::OP_JUMP_NEQ_ZERO, .argument=static_cast<int>(offset + ByteInstructions.size())});
-                    instructions.insert(std::end(ByteInstructions), std::begin(loopByteInstructions),
+                            ByteInstruction{.op=ByteOperation::BOP_JUMP_NEQ_ZERO, .argument=static_cast<int>(offset + instructions.size())});
+                    instructions.insert(std::end(instructions), std::begin(loopByteInstructions),
                                         std::end(loopByteInstructions));
                     break;
                 }
@@ -77,15 +77,8 @@ namespace brainfuck {
     }
 
 
-    ByteCompiler::ByteCompiler(Node _root): root(_root) {
+    ByteCompiler::ByteCompiler(NodeInstruction& _root): root(_root) {
         ops = compileAst(root);
-    };
-
-    std::vector<ByteInstruction> ByteCompiler::optimizeByteCode(std::vector<Optimizer*> optimizer) {
-        for (auto opt: optimizer) {
-            opt->optimize(ops);
-        }
-
-        return ops;
     }
+
 }

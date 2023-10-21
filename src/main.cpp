@@ -4,8 +4,10 @@
 #include <iostream>
 #include <vector>
 #include "parser.hpp"
+#include "asm.hpp"
 #include "optimizer.hpp"
 #include "optimizations/squashOptimizer.hpp"
+
 
 
 int main(int argc, char *argv[]) {
@@ -33,6 +35,16 @@ int main(int argc, char *argv[]) {
     optimizer.optimize(opts);
 
     optimizer.getRoot().print();
+
+    std::cout << "COMPILE" << std::endl;
+
+    brainfuck::ByteCompiler byteCompiler{optimizer.getRoot()};
+
+    int counter = 0;
+    for (auto i : byteCompiler.ops) {
+        std::cout << std::to_string(counter++) << " : ";
+        i.print();
+    }
 
     return 0;
 }
