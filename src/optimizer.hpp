@@ -1,15 +1,16 @@
 //
-// Created by kosakseb on 20.10.23.
+// Created by kosakseb on 21.10.23.
 //
 
-#ifndef BRAINFUCK_OPTIMIZER_HPP
-#define BRAINFUCK_OPTIMIZER_HPP
+#ifndef HW1_OPTIMIZER_HPP
+#define HW1_OPTIMIZER_HPP
 
-#include <vector>
 #include "parser.hpp"
+#include <vector>
 
 namespace brainfuck {
-    enum ByteOperation {
+    enum OptimizerOperation {
+        OP_START,
         // ARITHMETIC OPS
         OP_ADD,
         OP_SUB,
@@ -18,37 +19,39 @@ namespace brainfuck {
         OP_MOVE_RIGHT,
         OP_MOVE_LEFT,
         // CONTROL
-        OP_JUMP_NEQ_ZERO,
+        OP_LOOP,
         // IO
         OP_OUTPUT,
         OP_INPUT
     };
 
-    struct Instruction {
-        ByteOperation op;
+    struct NodeInstruction {
+        OptimizerOperation kind;
         int argument;
-
+        size_t childrenCount;
+        std::vector <NodeInstruction> childrenInstructions;
         void print();
     };
 
-    class Optimizer {
+    class OptimizationStep {
     public:
-        virtual std::vector<int> optimize(std::vector<Instruction> byteCode);
+        OptimizationStep() = default;
+        ~OptimizationStep() = default;
+        virtual void optimize(NodeInstruction& root) {};
     };
 
-    class ByteCompiler {
+    class Optimizer {
     private:
-        const Node root;
-        std::vector<Instruction> compileAst(Node node, size_t offset);
+        NodeInstruction rootInstruction;
+        NodeInstruction compileAst(Node& node);
 
     public:
-        ByteCompiler(Node _root);
-        ~ByteCompiler() = default;
-
-        std::vector<Instruction> ops;
-
-        std::vector<Instruction> optimizeByteCode(std::vector<Optimizer> optimizer);
-        void exportByteCode();
+        Optimizer(Node& root);
+        ~Optimizer() = default;
+        void optimize(std::vector<OptimizationStep*> optimizers);
+        NodeInstruction& getRoot() {
+            return rootInstruction;
+        };
     };
 }
 

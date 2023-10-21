@@ -5,14 +5,7 @@
 #include <vector>
 #include "parser.hpp"
 #include "optimizer.hpp"
-
-void printProgram(std::vector <brainfuck::Instruction> ops) {
-    int counter = 0;
-    for (auto i: ops) {
-        std::cout << std::to_string(counter++) << " : ";
-        i.print();
-    }
-}
+#include "optimizations/squashOptimizer.hpp"
 
 
 int main(int argc, char *argv[]) {
@@ -27,10 +20,19 @@ int main(int argc, char *argv[]) {
 
     std::cout << "PARSED" << std::endl;
 
-    brainfuck::ByteCompiler byteCompiler{parser.getRoot()};
-    // Parse the program into AST
+    brainfuck::Optimizer optimizer{parser.getRoot()};
 
-    printProgram(byteCompiler.ops);
+    optimizer.getRoot().print();
+
+    std::cout << "OPTIMIZED" << std::endl;
+
+    // Parse the program into AST
+    brainfuck::SquashArithmeticOptimizationStep aO = brainfuck::SquashArithmeticOptimizationStep();
+    brainfuck::SquashMoveOptimizationStep mO = brainfuck::SquashMoveOptimizationStep();
+    std::vector<brainfuck::OptimizationStep*> opts{&aO, &mO};
+    optimizer.optimize(opts);
+
+    optimizer.getRoot().print();
 
     return 0;
 }

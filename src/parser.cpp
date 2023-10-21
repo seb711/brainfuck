@@ -11,7 +11,7 @@ namespace brainfuck {
         root = this->compileProcedure();
     }
 
-    Node Parser::getRoot() {
+    Node& Parser::getRoot() {
         return this->root;
     }
 

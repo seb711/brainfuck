@@ -40,7 +40,7 @@ namespace brainfuck {
 
         ~Parser() = default;
 
-        Node getRoot();
+        Node& getRoot();
     };
 
     class syntax_error

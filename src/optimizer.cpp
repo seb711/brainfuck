@@ -1,35 +1,46 @@
 //
-// Created by kosakseb on 20.10.23.
+// Created by kosakseb on 21.10.23.
 //
 
 #include "optimizer.hpp"
 #include <iostream>
 
 namespace brainfuck {
-    void Instruction::print() {
-        switch (op) {
-            case ByteOperation::OP_OUTPUT:
+    void NodeInstruction::print() {
+        switch (kind) {
+            case OptimizerOperation::OP_START:
+                std::cout << "OP_START " << std::endl;
+                for (auto i : this->childrenInstructions) {
+                    i.print();
+                }
+                std::cout << "OP_END ";
+                break;
+            case OptimizerOperation::OP_OUTPUT:
                 std::cout << "OP_OUTPUT ";
                 break;
-            case ByteOperation::OP_INPUT:
+            case OptimizerOperation::OP_INPUT:
                 std::cout << "OP_INPUT ";
                 break;
-            case ByteOperation::OP_SUB:
+            case OptimizerOperation::OP_SUB:
                 std::cout << "OP_SUB ";
                 break;
-            case ByteOperation::OP_ADD:
+            case OptimizerOperation::OP_ADD:
                 std::cout << "OP_ADD ";
                 break;
-            case ByteOperation::OP_MOVE_RIGHT:
+            case OptimizerOperation::OP_MOVE_RIGHT:
                 std::cout << "OP_MOVE_RIGHT ";
                 break;
-            case ByteOperation::OP_MOVE_LEFT:
+            case OptimizerOperation::OP_MOVE_LEFT:
                 std::cout << "OP_MOVE_LEFT ";
                 break;
-            case ByteOperation::OP_JUMP_NEQ_ZERO:
-                std::cout << "OP_JUMP_NEQ_ZERO ";
+            case OptimizerOperation::OP_LOOP:
+                std::cout << "OP_LOOP " << std::endl;
+                for (auto i : this->childrenInstructions) {
+                    i.print();
+                }
+                std::cout << "OP_LOOP_END ";
                 break;
-            case ByteOperation::OP_MUL:
+            case OptimizerOperation::OP_MUL:
                 std::cout << "OP_MUL ";
                 break;
         }
@@ -37,49 +48,46 @@ namespace brainfuck {
         std::cout << std::to_string(argument) << std::endl;
     }
 
-    std::vector<Instruction> ByteCompiler::compileAst(Node node, size_t offset = 0) {
-        std::vector<Instruction> instructions{};
-
-        /// FOR LABEL THINGS CHECK ROOT NODE
-
-        for (auto i: node.childrenInstructions) {
-            switch (i.kind) {
-                case ParserOperation::OUT:
-                    instructions.push_back(Instruction{.op=ByteOperation::OP_OUTPUT, .argument=0});
-                    break;
-                case ParserOperation::IN:
-                    instructions.push_back(Instruction{.op=ByteOperation::OP_INPUT, .argument=0});
-                    break;
-                case ParserOperation::MOVE_R:
-                    instructions.push_back(Instruction{.op=ByteOperation::OP_MOVE_RIGHT, .argument=1});
-                    break;
-                case ParserOperation::MOVE_L:
-                    instructions.push_back(Instruction{.op=ByteOperation::OP_MOVE_LEFT, .argument=1});
-                    break;
-                case ParserOperation::ADD:
-                    instructions.push_back(Instruction{.op=ByteOperation::OP_ADD, .argument=1});
-                    break;
-                case ParserOperation::SUB:
-                    instructions.push_back(Instruction{.op=ByteOperation::OP_SUB, .argument=1});
-                    break;
-                case ParserOperation::LOOP: {
-                    std::vector <Instruction> loopInstructions = compileAst(i, offset + instructions.size());
-                    loopInstructions.push_back(
-                            Instruction{.op=ByteOperation::OP_JUMP_NEQ_ZERO, .argument=static_cast<int>(offset + instructions.size())});
-                    instructions.insert(std::end(instructions), std::begin(loopInstructions),
-                                        std::end(loopInstructions));
-                    break;
+    NodeInstruction Optimizer::compileAst(Node &node) {
+        switch (node.kind) {
+            case ParserOperation::OUT:
+                return NodeInstruction{.kind=OptimizerOperation::OP_OUTPUT, .argument=1, .childrenCount=0, .childrenInstructions=std::vector<NodeInstruction>()};
+            case ParserOperation::IN:
+                return NodeInstruction{.kind=OptimizerOperation::OP_INPUT, .argument=1, .childrenCount=0, .childrenInstructions=std::vector<NodeInstruction>()};
+            case ParserOperation::MOVE_R:
+                return NodeInstruction{.kind=OptimizerOperation::OP_MOVE_RIGHT, .argument=1, .childrenCount=0, .childrenInstructions=std::vector<NodeInstruction>()};
+            case ParserOperation::MOVE_L:
+                return NodeInstruction{.kind=OptimizerOperation::OP_MOVE_LEFT, .argument=1, .childrenCount=0, .childrenInstructions=std::vector<NodeInstruction>()};
+            case ParserOperation::ADD:
+                return NodeInstruction{.kind=OptimizerOperation::OP_ADD, .argument=1, .childrenCount=0, .childrenInstructions=std::vector<NodeInstruction>()};
+            case ParserOperation::SUB:
+                return NodeInstruction{.kind=OptimizerOperation::OP_SUB, .argument=1, .childrenCount=0, .childrenInstructions=std::vector<NodeInstruction>()};
+            case ParserOperation::LOOP: {
+                std::vector <NodeInstruction> childrenInstructions{};
+                for (auto ins: node.childrenInstructions) {
+                    childrenInstructions.push_back(this->compileAst(ins));
                 }
-                default:
-                    break;
+                return NodeInstruction{.kind=OptimizerOperation::OP_LOOP, .argument=0, .childrenCount=childrenInstructions.size(), .childrenInstructions=childrenInstructions};
             }
+            case ParserOperation::PROC: {
+                std::vector <NodeInstruction> childrenInstructions{};
+                for (auto ins: node.childrenInstructions) {
+                    childrenInstructions.push_back(this->compileAst(ins));
+                }
+                return NodeInstruction{.kind=OptimizerOperation::OP_START, .argument=0, .childrenCount=childrenInstructions.size(), .childrenInstructions=childrenInstructions};
+            }
+            default:
+                return NodeInstruction{.kind=OptimizerOperation::OP_ADD, .argument=0, .childrenCount=0, .childrenInstructions=std::vector<NodeInstruction>()};
         }
-
-        return instructions;
     }
 
+    Optimizer::Optimizer(Node &root) {
+        rootInstruction = compileAst(root);
+    }
 
-    ByteCompiler::ByteCompiler(Node _root): root(_root) {
-        ops = compileAst(root);
-    };
+    void Optimizer::optimize(std::vector<OptimizationStep *> optimizers) {
+        for (auto i: optimizers) {
+            i->optimize(rootInstruction);
+        }
+    }
 }
