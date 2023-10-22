@@ -43,6 +43,12 @@ namespace brainfuck {
             case OptimizerOperation::OP_MUL:
                 std::cout << "OP_MUL ";
                 break;
+            case OptimizerOperation::OP_SET_ZERO:
+                std::cout << "OP_SET_ZERO ";
+                break;
+            case OptimizerOperation::OP_FIND_NEXT_ZERO:
+                std::cout << "OP_FIND_NEXT_ZERO ";
+                break;
         }
 
         std::cout << std::to_string(argument) << std::endl;

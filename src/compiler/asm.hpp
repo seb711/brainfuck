@@ -43,7 +43,17 @@ namespace brainfuck {
 
         std::vector<ByteInstruction> ops;
 
-        void exportByteCode();
+        void exportByteCode(const char*  path);
+    };
+
+    class output_error
+            : public std::exception {
+    public:
+        [[nodiscard]] const char *what() const
+
+        noexcept override{
+                return "output process error";
+        }
     };
 }
 

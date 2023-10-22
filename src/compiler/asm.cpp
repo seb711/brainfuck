@@ -4,6 +4,17 @@
 
 #include "asm.hpp"
 #include <iostream>
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <unordered_map>
+#include <unordered_set>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <cstring>
 
 namespace brainfuck {
     void ByteInstruction::print() {
@@ -74,6 +85,26 @@ namespace brainfuck {
         }
 
         return instructions;
+    }
+
+    void ByteCompiler::exportByteCode(const char* path) {
+        std::vector<int> result{};
+
+        for (auto& i: ops) {
+            result.push_back(i.op);
+            result.push_back(i.argument);
+        }
+
+        // now let`s write
+        int fd = open(path, O_RDWR | O_CREAT | O_TRUNC, 0666);
+        auto size = result.size() * sizeof(result[0]);
+        if (fd < 0 || ftruncate(fd, size)) {
+            throw output_error();
+        }
+        void* memory = mmap(nullptr, size, PROT_WRITE, MAP_SHARED, fd, 0);
+        if (memory == MAP_FAILED) {
+            throw output_error();
+        }
     }
 
 

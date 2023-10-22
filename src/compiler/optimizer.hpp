@@ -22,7 +22,10 @@ namespace brainfuck {
         OP_LOOP,
         // IO
         OP_OUTPUT,
-        OP_INPUT
+        OP_INPUT,
+        // SPECIAL LOOP PATTERNS
+        OP_SET_ZERO,
+        OP_FIND_NEXT_ZERO
     };
 
     struct NodeInstruction {
