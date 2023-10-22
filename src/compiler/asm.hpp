@@ -14,7 +14,6 @@ namespace brainfuck {
         // ARITHMETIC OPS
         BOP_ADD,
         BOP_SUB,
-        BOP_MUL,
         // PC
         BOP_MOVE_RIGHT,
         BOP_MOVE_LEFT,
@@ -22,7 +21,12 @@ namespace brainfuck {
         BOP_JUMP_NEQ_ZERO,
         // IO
         BOP_OUTPUT,
-        BOP_INPUT
+        BOP_INPUT,
+        // OTHER
+        BOP_SET_ZERO,
+        BOP_FIND_NEXT_ZERO,
+        // END
+        BOP_DONE
     };
 
     struct ByteInstruction {

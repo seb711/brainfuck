@@ -1,0 +1,13 @@
+INTERPETER:
+
+g++ src/interpreter/vm.cpp -c  -Wall -std=c++20 -Iinclude -fsanitize=undefined -O0 -o bin/vm.out
+g++  src/interpreter/main.cpp bin/vm.out  -Wall -std=c++20 -Iinclude -g  -lfmt -ltbb -pthread -fsanitize=undefined -O0 -o bin/interpreter.out
+
+COMPILER:
+g++ src/compiler/asm.cpp -c  -Wall -std=c++20 -Iinclude -fsanitize=undefined -O0 -o bin/asm.out
+g++ src/compiler/optimizer.cpp -c  -Wall -std=c++20 -Iinclude -fsanitize=undefined -O0 -o bin/optimizer.out
+g++ src/compiler/parser.cpp -c  -Wall -std=c++20 -Iinclude -fsanitize=undefined -O0 -o bin/parser.out
+g++ src/compiler/optimizations/patternOptimizer.cpp bin/opt.out -c  -Wall -std=c++20 -Iinclude -fsanitize=undefined -O0 -o bin/optPat.out
+g++ src/compiler/optimizations/squashOptimizer.cpp bin/opt.out -c  -Wall -std=c++20 -Iinclude -fsanitize=undefined -O0 -o bin/optSqa.out
+g++  src/compiler/main.cpp bin/asm.out bin/optimizer.out bin/parser.out bin/optPat.out bin/optSqa.out  -Wall -std=c++20 -Iinclude -g  -lfmt -ltbb -pthread -fsanitize=undefined -O0 -o bin/compiler.out
+

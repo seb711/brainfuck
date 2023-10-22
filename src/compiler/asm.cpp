@@ -40,8 +40,14 @@ namespace brainfuck {
             case ByteOperation::BOP_JUMP_NEQ_ZERO:
                 std::cout << "OP_JUMP_NEQ_ZERO ";
                 break;
-            case ByteOperation::BOP_MUL:
-                std::cout << "OP_MUL ";
+            case ByteOperation::BOP_SET_ZERO:
+                std::cout << "BOP_SET_ZERO ";
+                break;
+            case ByteOperation::BOP_FIND_NEXT_ZERO:
+                std::cout << "BOP_FIND_NEXT_ZERO ";
+                break;
+            case ByteOperation::BOP_DONE:
+                std::cout << "BOP_DONE ";
                 break;
         }
 
@@ -70,6 +76,12 @@ namespace brainfuck {
                     break;
                 case OptimizerOperation::OP_SUB:
                     instructions.push_back(ByteInstruction{.op=ByteOperation::BOP_SUB, .argument=i.argument});
+                    break;
+                case OptimizerOperation::OP_SET_ZERO:
+                    instructions.push_back(ByteInstruction{.op=ByteOperation::BOP_SET_ZERO, .argument=i.argument});
+                    break;
+                case OptimizerOperation::OP_FIND_NEXT_ZERO:
+                    instructions.push_back(ByteInstruction{.op=ByteOperation::BOP_FIND_NEXT_ZERO, .argument=i.argument});
                     break;
                 case OptimizerOperation::OP_LOOP: {
                     std::vector <ByteInstruction> loopByteInstructions = compileAst(i, offset + instructions.size());
@@ -105,11 +117,15 @@ namespace brainfuck {
         if (memory == MAP_FAILED) {
             throw output_error();
         }
+        std::memcpy(memory, &result[0], size);
+        munmap(memory, size);
+        close(fd);
     }
 
 
     ByteCompiler::ByteCompiler(NodeInstruction& _root): root(_root) {
         ops = compileAst(root);
+        ops.push_back(ByteInstruction{.op=ByteOperation::BOP_DONE, .argument=0});
     }
 
 }

@@ -39,6 +39,13 @@ int main(int argc, char *argv[]) {
     // std::cout << "COMPILE" << std::endl;
 
     brainfuck::ByteCompiler byteCompiler{optimizer.getRoot()};
+
+    int counter = 0;
+    for (auto i : byteCompiler.ops) {
+        std::cout << std::to_string(counter) << " : ";
+        i.print();
+    }
+
     byteCompiler.exportByteCode(argv[2]);
 
     return 0;
