@@ -2,6 +2,9 @@
 // Created by kosakseb on 20.10.23.
 //
 #include <iostream>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 #include <vector>
 #include "parser.hpp"
 #include "asm.hpp"
@@ -9,17 +12,40 @@
 #include "optimizations/squashOptimizer.hpp"
 #include "optimizations/patternOptimizer.hpp"
 
+std::string read_code(std::string file_path) {
+    // Open the file
+    std::ifstream file(file_path);
+
+    // Check if the file is successfully opened
+    if (!file.is_open()) {
+        std::cerr << "Failed to open the file: " << file_path << std::endl;
+        return "";
+    }
+
+    // Read the file content into a string
+    std::string file_content;
+    std::string line;
+    while (std::getline(file, line)) {
+        file_content += line;
+    }
+
+    // Close the file
+    file.close();
+
+    file_content.erase(std::remove(file_content.begin(), file_content.end(), '\n'), file_content.cend());
+    file_content.erase(std::remove(file_content.begin(), file_content.end(), ' '), file_content.cend());
+
+    return file_content;
+}
+
 int main(int argc, char *argv[]) {
     if (argc != 3) {
-        std::cout << "Usage: " << argv[0] << " [brainfuck code]" << " [path to export bytecode]"<< std::endl;
+        std::cout << "Usage: " << argv[0] << " [path to .bf file]" << " [path to export bytecode]"<< std::endl;
         return 1;
     }
 
-    std::string prog(argv[1]);
-
-    // REMOVE ALL NEWLINES FROM PROG
-    prog.erase(std::remove(prog.begin(), prog.end(), '\n'), prog.cend());
-    prog.erase(std::remove(prog.begin(), prog.end(), ' '), prog.cend());
+    std::string file_path = argv[1];
+    std::string prog = read_code(file_path);
 
     brainfuck::Parser parser{prog};
 
