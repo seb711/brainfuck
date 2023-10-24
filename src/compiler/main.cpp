@@ -17,6 +17,10 @@ int main(int argc, char *argv[]) {
 
     std::string prog(argv[1]);
 
+    // REMOVE ALL NEWLINES FROM PROG
+    prog.erase(std::remove(prog.begin(), prog.end(), '\n'), prog.cend());
+    prog.erase(std::remove(prog.begin(), prog.end(), ' '), prog.cend());
+
     brainfuck::Parser parser{prog};
 
     // std::cout << "PARSED" << std::endl;

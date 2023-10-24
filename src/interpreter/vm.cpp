@@ -7,90 +7,59 @@
 
 namespace brainfuck {
     void VM::run() {
-        memory = std::vector<uint8_t>(MEMORY_SIZE, 0);
-        uint32_t memoryPtr = 0;
-        uint32_t instructionPtr = 0;
+        size_t pc = 0;
+        static const void* table[] = {
+                &&CASE_ADD,
+                &&CASE_SUB,
+                &&CASE_MOVE_RIGHT,
+                &&CASE_MOVE_LEFT,
+                &&CASE_JUMP_NEQZ,
+                &&CASE_OUTPUT,
+                &&CASE_INPUT,
+                &&CASE_SET_ZERO,
+                &&CASE_FIND_NEXT_ZERO,
+                &&CASE_DONE};
 
-        while (true) {
-            instructionPtr++;
+#define DISPATCH do { goto *table[static_cast<size_t>(instructions[pc++].op)]; } while (0)
 
-            // std::cout << "IP: " << std::to_string(instructionPtr) << std::endl;
-            // std::cout << "MP: " << std::to_string(memoryPtr)<< " "  << std::to_string(memory[memoryPtr]) << std::endl;
-
-            switch (static_cast<ByteOperation>(instructions[instructionPtr - 1])) {
-                case ByteOperation::BOP_ADD: {
-                    // std::cout << "BOP_ADD " << std::to_string(instructions[instructionPtr]) << std::endl;
-                    auto arg = instructions[instructionPtr];
-                    this->memory[memoryPtr] += static_cast<int8_t>(arg);
-                    instructionPtr++;
-                    break;
+                CASE_ADD: {
+                    s.arr[s.ptr] += static_cast<uint8_t>(instructions[pc - 1].data);
+                    DISPATCH;
                 }
-                case ByteOperation::BOP_SUB: {
-                    // std::cout << "BOP_SUB " << std::to_string(instructions[instructionPtr]) << std::endl;
-                    auto arg = instructions[instructionPtr];
-                    this->memory[memoryPtr] -= static_cast<int8_t>(arg);
-                    instructionPtr++;
-                    break;
+                CASE_SUB: {
+                    s.arr[s.ptr] -= static_cast<uint8_t>(instructions[pc - 1].data);
+                    DISPATCH;
                 }
-                case ByteOperation::BOP_MOVE_RIGHT: {
-                    // std::cout << "BOP_MOVE_RIGHT " << std::to_string(instructions[instructionPtr]) << std::endl;
-                    auto arg = instructions[instructionPtr];
-                    memoryPtr += arg;
-                    instructionPtr++;
-                    break;
+                CASE_MOVE_RIGHT: {
+                    s.ptr += static_cast<uint8_t>(instructions[pc - 1].data);
+                    DISPATCH;
                 }
-                case ByteOperation::BOP_MOVE_LEFT: {
-                    // std::cout << "BOP_MOVE_LEFT " << std::to_string(instructions[instructionPtr]) << std::endl;
-                    auto arg = instructions[instructionPtr];
-                    memoryPtr -= arg;
-                    instructionPtr++;
-                    break;
+                CASE_MOVE_LEFT: {
+                    s.ptr -= static_cast<uint8_t>(instructions[pc - 1].data);
+                    DISPATCH;
                 }
-                case ByteOperation::BOP_JUMP_NEQ_ZERO: {
-                    // std::cout << "BOP_JUMP_NEQ_ZERO " << std::to_string(instructions[instructionPtr]) << std::endl;
-                    if (this->memory[memoryPtr] != 0) {
-                        auto arg = instructions[instructionPtr];
-                        instructionPtr = arg * 2;
-                    } else {
-                        instructionPtr++;
+                CASE_JUMP_NEQZ: {
+                    if (s.arr[s.ptr]) {
+                        pc = instructions[pc - 1].data;
                     }
-                    break;
+                    DISPATCH;
                 }
-                case ByteOperation::BOP_OUTPUT: {
-                    // std::cout << "BOP_OUTPUT " << std::to_string(instructions[instructionPtr]) << std::endl;
-                    std::cout << this->memory[memoryPtr];
-                    instructionPtr++;
-                    break;
+                CASE_OUTPUT: {
+                    std::cout << s.arr[s.ptr];
+                    DISPATCH;
                 }
-                case ByteOperation::BOP_INPUT: {
-                    // std::cout << "BOP_INPUT " << std::to_string(instructions[instructionPtr]) << std::endl;
-                    std::cin >> this->memory[memoryPtr];
-                    instructionPtr++;
-                    break;
+                CASE_INPUT: {
+                    std::cin >> s.arr[s.ptr];
+                    DISPATCH;
                 }
-                case ByteOperation::BOP_SET_ZERO: {
-                    // std::cout << "BOP_SET_ZERO " << std::to_string(instructions[instructionPtr]) << std::endl;
-                    this->memory[memoryPtr] = 0;
-                    instructionPtr++;
-                    break;
+                CASE_SET_ZERO: {
+                    s.arr[s.ptr] = 0;
+                    DISPATCH;
                 }
-                case ByteOperation::BOP_FIND_NEXT_ZERO: {
-                    // std::cout << "BOP_FIND_NEXT_ZERO " << std::to_string(instructions[instructionPtr]) << std::endl;
-                    do {
-                        memoryPtr++;
-                    } while (!this->memory[memoryPtr]);
-                    instructionPtr++;
-                    break;
-                }
-                case ByteOperation::BOP_DONE: {
-                    // std::cout << "BOP_DONE " << std::to_string(instructions[instructionPtr]) << std::endl;
-                    std::cout << "DONE" << std::endl;
+                CASE_FIND_NEXT_ZERO: while (s.arr[s.ptr] != '\0') {s.ptr++;}; DISPATCH;
+                CASE_DONE: {
+                    std::cout << std::endl << "DONE" << std::endl;
                     return;
                 }
-                default:
-                    std::cout << "ERROR" << std::endl;
-                    return;
-            }
-        }
     }
 }
