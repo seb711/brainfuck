@@ -23,8 +23,8 @@ COMPILER_OBJS = $(patsubst $(COMPILER_SRC_DIR)/%.cpp, $(COMPILER_OBJ_DIR)/%.o, $
 INTERPRETER_OBJS = $(patsubst $(INTERPRETER_SRC_DIR)/%.cpp, $(INTERPRETER_OBJ_DIR)/%.o, $(INTERPRETER_SRCS))
 
 # The name of the final executables
-COMPILER_TARGET = $(COMPILER_BIN_DIR)/bf_compiler
-INTERPRETER_TARGET = $(INTERPRETER_BIN_DIR)/bf_interpreter
+COMPILER_TARGET = $(COMPILER_BIN_DIR)/compiler
+INTERPRETER_TARGET = $(INTERPRETER_BIN_DIR)/interpreter
 
 # Default make targets (build both executables)
 all: $(COMPILER_TARGET) $(INTERPRETER_TARGET)

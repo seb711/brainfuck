@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <cstring>
+#include <chrono>
 #include <sys/mman.h>
 #include <unistd.h>
 #include "vm.hpp"
@@ -35,7 +36,12 @@ int main(int argc, char** argv) {
     }
 
     brainfuck::VM vm(memory, file_size / sizeof(*memory));
+
+    auto t1 = std::chrono::high_resolution_clock::now();
     vm.run();
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+    std::cout << "Interpretation took " << ms_int.count() << "ms" << std::endl;
 
     if (munmap(memory, file_size) < 0 || close(fd)) {
         std::cerr << std::strerror(errno);
